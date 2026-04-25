@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>WJC Recognition Card</title>
+<style>
+  :root {
+    --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-stack);
+    background-color: #f5f5f7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #1d1d1f;
+  }
+  .app-container {
+    display: flex;
+    gap: 48px;
+    align-items: flex-start;
+    padding: 40px;
+  }
+  
+  /* Controls */
+  .controls {
+    width: 340px;
+    background: white;
+    padding: 32px;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+  }
+  .controls h2 {
+    margin-top: 0;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+  }
+  .control-group {
+    margin-bottom: 24px;
+  }
+  .control-group label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #86868b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  input[type="text"], textarea, select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #d2d2d7;
+    border-radius: 12px;
+    font-size: 16px; 
+    font-family: var(--font-stack);
+    box-sizing: border-box;
+    transition: all 0.2s;
+    background: #fafafa;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: #538BBF;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(83,139,191,0.15);
+  }
+  textarea {
+    resize: vertical;
+    height: 110px;
+    line-height: 1.4;
+  }
+  
+  /* Color Selector */
+  .color-selector {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .color-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,0.3);
+  }
+  .color-btn:hover {
+    transform: scale(1.1);
+  }
+  .color-btn.active {
+    border-color: #1d1d1f;
+    transform: scale(1.1);
+  }
+
+  /* Tag Selector (Column Mode) */
+  .tag-selector-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .tag-btn {
+    width: 100%;
+    padding: 10px 14px;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    border: 1px solid #d2d2d7;
+    border-radius: 12px;
+    font-size: 12px; 
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tag-btn:hover {
+    background: #e5e5ea;
+  }
+  .tag-btn.active {
+    background: #538BBF;
+    color: white;
+    border-color: #538BBF;
+  }
+  
+  /* Card Design */
+  .card-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .card {
+    width: 440px;
+    height: 720px; 
+    border-radius: 36px;
+    background: #538BBF; 
+    box-shadow: 0 24px 60px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: background 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+    position: relative;
+  }
+  
+  /* 照片渐变层 */
+  .card-photo {
+    width: 100%;
+    height: 55%; 
+    background-color: transparent;
+    position: absolute; 
+    top: 0;
+    left: 0;
+    z-index: 1;
+  }
+  .card-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
+    mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%);
+  }
+  
+  /* 文本内容层 */
+  .card-content {
+    height: 100%;
+    padding: 32px 36px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    color: #ffffff; 
+    z-index: 2;
+    position: relative;
+  }
+  .card-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+    letter-spacing: -0.01em;
+  }
+  .card-message {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.5;
+    margin: 0 0 12px 0;
+    opacity: 0.95;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 14; 
+    -webkit-box-orient: vertical;
+  }
+  .card-from {
+    font-size: 13px;
+    font-weight: 700; 
+    opacity: 0.9;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Values 标签展示区域 - 容器与多个徽章自适应 */
+  .value-badges-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 14px;
+    align-items: flex-start;
+  }
+  .value-badge {
+    display: inline-flex; 
+    align-items: flex-start;
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.15); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 600; 
+    color: #ffffff; 
+    line-height: 1.4;
+    max-width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+  }
+  
+  /* 前缀样式 (Teamwork: / Innovation:) */
+  .value-prefix {
+    opacity: 0.7;
+    margin-right: 6px;
+    font-weight: 700;
+    flex-shrink: 0; /* 防止前缀被换行挤压 */
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 18px;
+  }
+  .footer-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .aoe-badge {
+    padding: 6px 14px;
+    background: rgba(255,255,255,0.15); 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700; 
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: #ffffff;
+  }
+  
+  /* 自定义 Logo */
+  .custom-logo {
+    height: 24px;
+    max-width: 140px;
+    object-fit: contain;
+    opacity: 0.95;
+    /* 给黑色 Logo 增加反色滤镜变成白色 */
+    filter: brightness(0) invert(1);
+  }
+
+  /* File upload hide */
+  #photo-upload {
+    display: none;
+  }
+  .upload-btn {
+    display: inline-block;
+    padding: 10px 18px;
+    background: #f5f5f7;
+    color: #538BBF; 
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+    border: 1px solid #d2d2d7;
+    margin-bottom: 8px;
+  }
+  .upload-btn:hover {
+    background: #e5e5ea;
+  }
+  .btn-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  /* === iPhone / 移动端布局适配 === */
+  @media (max-width: 800px) {
+    .app-container {
+      flex-direction: column; 
+      padding: 20px;
+      gap: 32px;
+      align-items: center;
+    }
+    .controls {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    .card {
+      width: 340px;
+      height: 600px; 
+      border-radius: 28px;
+    }
+    .card-photo {
+      height: 50%; 
+    }
+    .card-content {
+      padding: 24px 28px;
+    }
+    .card-title {
+      font-size: 20px;
+    }
+    .card-message {
+      font-size: 14px;
+      -webkit-line-clamp: 12;
+      margin-bottom: 8px;
+    }
+    .card-from {
+      font-size: 12px;
+    }
+    .value-badges-container {
+      margin-top: 10px;
+      gap: 6px;
+    }
+    .value-badge {
+      font-size: 12px;
+      padding: 6px 12px;
+    }
+    .card-footer {
+      margin-top: 14px;
+    }
+    .aoe-badge {
+      font-size: 11px;
+      padding: 5px 12px;
+    }
+    .custom-logo {
+      height: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Controls Area -->
+  <div class="controls">
+    <h2>Recognition Card</h2>
+    
+    <div class="control-group">
+      <label>Card Photo</label>
+      <div class="btn-row">
+        <label class="upload-btn" for="photo-upload">Choose Photo...</label>
+        <input type="file" id="photo-upload" accept="image/*">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label>Recipient Name</label>
+      <input type="text" id="name-input" value="" maxlength="30" placeholder="e.g. Jane Appleseed">
+    </div>
+
+    <div class="control-group">
+      <label>From (Recognized By)</label>
+      <input type="text" id="from-input" value="" maxlength="30" placeholder="Your name here...">
+    </div>
+
+    <div class="control-group">
+      <label>Recognition Message</label>
+      <textarea id="message-input" maxlength="500" placeholder="Type your recognition message here..."></textarea>
+    </div>
+
+    <div class="control-group">
+      <label>Area of Experience (AOE)</label>
+      <div class="color-selector" id="color-selector">
+        <button class="color-btn active" style="background-color: #538BBF;" data-color="#538BBF" data-aoe="Genius Bar" title="Genius Bar"></button>
+        <button class="color-btn" style="background-color: #9C73BA;" data-color="#9C73BA" data-aoe="Business" title="Business"></button>
+        <button class="color-btn" style="background-color: #D4954A;" data-color="#D4954A" data-aoe="Forum" title="Forum"></button>
+        <button class="color-btn" style="background-color: #6AA873;" data-color="#6AA873" data-aoe="Operations" title="Operations"></button>
+        <button class="color-btn" style="background-color: #D07D89;" data-color="#D07D89" data-aoe="Shopping" title="Shopping"></button>
+        <button class="color-btn" style="background-color: #6BABC2;" data-color="#6BABC2" data-aoe="Others" title="Others"></button>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label>Teamwork (Values) — 可多选</label>
+      <div class="tag-selector-col">
+        <button class="tag-btn" data-category="Teamwork" data-tag="与同事培养了融洽的关系并注重团队合作">与同事培养了融洽的关系并注重团队合作</button>
+        <button class="tag-btn" data-category="Teamwork" data-tag="进行开放、有效的沟通">进行开放、有效的沟通</button>
+        <button class="tag-btn" data-category="Teamwork" data-tag="对团队绩效产生了正面影响">对团队绩效产生了正面影响</button>
+        <button class="tag-btn" data-category="Teamwork" data-tag="能够指引和激励他人">能够指引和激励他人</button>
+        <button class="tag-btn" data-category="Teamwork" data-tag="鼓励他人分享自己的观点">鼓励他人分享自己的观点</button>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label>Innovation (Values) — 可多选</label>
+      <div class="tag-selector-col">
+        <button class="tag-btn" data-category="Innovation" data-tag="运用创造力、好奇心和创新思维处理问题">运用创造力、好奇心和创新思维处理问题</button>
+        <button class="tag-btn" data-category="Innovation" data-tag="依靠专业知识寻求更好的工作方法">依靠专业知识寻求更好的工作方法</button>
+        <button class="tag-btn" data-category="Innovation" data-tag="注重关键细节，从而成就卓越">注重关键细节，从而成就卓越</button>
+        <button class="tag-btn" data-category="Innovation" data-tag="勇于承担并巧妙应对了风险">勇于承担并巧妙应对了风险</button>
+        <button class="tag-btn" data-category="Innovation" data-tag="考虑他人的观点，以求获得最佳方法或想法">考虑他人的观点，以求获得最佳方法或想法</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Card Preview -->
+  <div class="card-wrapper" id="capture-area">
+    <div class="card" id="recognition-card">
+      <div class="card-photo">
+        <img id="card-img" src="https://rtlimages.apple.com/cmc/dieter/store/16_9/R581.png?resize=2880:1612&output-format=jpg&output-quality=85&interpolation=progressive-bicubic" alt="Profile Photo">
+      </div>
+      <div class="card-content">
+        <h3 class="card-title" id="card-name"></h3>
+        <p class="card-message" id="card-msg"></p>
+        <p class="card-from" id="card-from" style="display: none;"></p>
+        
+        <!-- 新增的大段 Values 定义展示区 (多选容器) -->
+        <div class="value-badges-container" id="value-badges-container"></div>
+
+        <div class="card-footer">
+          <span class="aoe-badge" id="card-aoe">Genius Bar</span>
+          <div class="footer-right">
+            <img class="custom-logo" id="card-logo" src="logo.png" alt="Custom Logo" onerror="this.style.display='none'">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const nameInput = document.getElementById('name-input');
+  const fromInput = document.getElementById('from-input');
+  const msgInput = document.getElementById('message-input');
+  const photoUpload = document.getElementById('photo-upload');
+  
+  const colorBtns = document.querySelectorAll('.color-btn');
+  const tagBtns = document.querySelectorAll('.tag-btn');
+  
+  const cardName = document.getElementById('card-name');
+  const cardFrom = document.getElementById('card-from');
+  const cardMsg = document.getElementById('card-msg');
+  const cardImg = document.getElementById('card-img');
+  const cardAoe = document.getElementById('card-aoe');
+  
+  // Values 标签的多选展示容器
+  const valueBadgesContainer = document.getElementById('value-badges-container');
+  
+  const recognitionCard = document.getElementById('recognition-card');
+
+  nameInput.addEventListener('input', (e) => { cardName.textContent = e.target.value || ''; });
+  fromInput.addEventListener('input', (e) => {
+    const val = e.target.value.trim();
+    if(val) {
+      cardFrom.textContent = 'FROM ' + val;
+      cardFrom.style.display = 'block';
+    } else {
+      cardFrom.style.display = 'none';
+    }
+  });
+  msgInput.addEventListener('input', (e) => { cardMsg.textContent = e.target.value || ''; });
+
+  photoUpload.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) { cardImg.src = event.target.result; }
+      reader.readAsDataURL(file);
+    }
+  });
+
+  colorBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      colorBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const color = btn.getAttribute('data-color');
+      const aoe = btn.getAttribute('data-aoe');
+      recognitionCard.style.backgroundColor = color;
+      cardAoe.textContent = aoe;
+    });
+  });
+
+  // 处理多选逻辑 (最多3项)
+  tagBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const isActive = btn.classList.contains('active');
+      
+      if (isActive) {
+        // 如果已经选中，点击则取消选中
+        btn.classList.remove('active');
+      } else {
+        // 如果未选中，先判断当前已选中的数量
+        const currentActiveCount = document.querySelectorAll('.tag-btn.active').length;
+        if (currentActiveCount >= 3) {
+          alert('最多只能选择 3 项 Values 定义哦！');
+          return;
+        }
+        btn.classList.add('active');
+      }
+      
+      // 清空并重新渲染卡片中的展示容器
+      valueBadgesContainer.innerHTML = '';
+      const activeBtns = document.querySelectorAll('.tag-btn.active');
+      
+      activeBtns.forEach(activeBtn => {
+        const category = activeBtn.getAttribute('data-category');
+        const text = activeBtn.getAttribute('data-tag');
+        
+        // 创建新的标签元素
+        const badge = document.createElement('div');
+        badge.className = 'value-badge';
+        badge.innerHTML = `<span class="value-prefix">${category}: </span><span>${text}</span>`;
+        
+        // 添加到容器中
+        valueBadgesContainer.appendChild(badge);
+      });
+    });
+  });
+</script>
+
+</body>
+</html>
